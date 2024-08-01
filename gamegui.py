@@ -12,36 +12,34 @@ class Gamestate(Enum) :
     
 class Menu:
     #    pass
-    def __init__(self):
-        
-        pass
-    def draw(self):
-        self.screen.fill(0,0,0)
-        
+    pass
 class Charecter(ABC):
     @abstractmethod
     def properties(self):
-        self.x
-        self.y
-        self.health
-        self.size
+
+        pass
         
-class NPC():
+class NPC:
     def __init__(self):
         self.y = Screen_Y/2
         self.x = Screen_X
         self.health = 300
         self.rad = 20.0
-        self.circle = []
-    def init_circle(self):  # Clear screen
+        self.circles = []
+        self.init_circle()
+
+    def init_circle(self):
         for x in range(50, 1300, 80):
             for y in range(300, 0, -80):
-                self.circle.append([x,y])
+                self.circles.append([x, y])
+    def init_attack(self):
+        for x in range():
+            pass
 
 
 class Game(NPC,Menu):
     def __init__(self):
-        super().__init__()# to initialise the concrete method
+        NPC.__init__(self)# to initialise the concrete method
         pg.init()
         self.screen = pg.display.set_mode((Screen_X,Screen_Y)) 
         self.clock = pg.time.Clock()
@@ -75,18 +73,30 @@ class Game(NPC,Menu):
             self.y -= 14
         if keys[pg.K_s] and self.y < 750:
             self.y += 14
-        for rocket_pos in self.rocket_pos:
-            rocket_pos[1] -= 18
-            if rocket_pos[1] > 750:
-                rocket_pos = None 
-                        
+    def rocket_work(self): 
+        for rocket in self.rocket_pos[:]:
+            rocket[1] -= 18
+            if rocket[1] < 0:
+                self.rocket_pos.remove(rocket)
+            elif(self.collision_detection(rocket)):
+                self.rocket_pos.remove(rocket)
+                
+    def collision_detection(self,rocket):
+        rocket_start = (rocket[0],rocket[1])
+        rocket_end = (rocket[0], rocket[1]+ 50)
+        for circle in self.npc1.circles[:]:
+            dist_start = math.sqrt((rocket_start[0]- circle[0])**2 + (rocket_start[1] - circle[1])**2)
+            dist_end = math.sqrt((rocket_end[0]- circle[0])**2 + (rocket_end[1] - circle[1])**2)
+            if(dist_start <= 25 or dist_end <= 25):
+                self.npc1.circles.remove(circle)
+                return True
+        return False
+
     def run(self):
         while self.running:
             self.gameevents()
             self.update()
-            no_circle = self.collision_detection(self.npc1)
-            if (no_circle):
-                self.circle.remove(no_circle)
+            self.rocket_work()
             self.draw()
             self.clock.tick(60)
         self.cleanup()
@@ -101,22 +111,9 @@ class Game(NPC,Menu):
         pg.draw.rect(self.screen,(255,255,255),(x,y,100,50),3 )
         for rocket in self.rocket_pos:
             pg.draw.line(self.screen,(255,255,255),(rocket[0],rocket[1]),(rocket[0],rocket[1]+50))
-        NPC.init_circle(self)
-        for circle in self.circle:
-            pg.draw.circle(self.screen,(255,255,255),(circle[0],circle[1]),25.0)
+        for circle in self.npc1.circles:
+            pg.draw.circle(self.screen, (255, 255, 255), (circle[0], circle[1]), 25.0)
         pg.display.flip()
-    def collision_detection(self,npc1):
-        for rocket in self.rocket_pos:
-            rocket_start = (rocket[0],rocket[1])
-            rocket_end = (rocket[0], rocket[1]+ 50)
-            for circle in self.circle:
-                dist_start = math.sqrt((rocket_start[0]- npc1.x)**2 + (rocket_start[1] - npc1.y)**2)
-                dist_end = math.sqrt((rocket_end[0]- npc1.x)**2 + (rocket_end[1] - npc1.y)**2)
-                if(dist_start <= 25 or dist_end <= 25):
-                    return circle
-        return None
-            
-        
 
 # Usage
 if __name__ == "__main__":
